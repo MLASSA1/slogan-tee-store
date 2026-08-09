@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { writeCart } from "../cart-storage";
+import { clearBag } from "../cart-storage";
 import { StoreShell } from "../components/StoreShell";
 
 export default function CookiesPage() {
   const [cleared, setCleared] = useState(false);
 
   function clearLocalBag() {
-    writeCart([]);
-    setCleared(true);
+    clearBag()
+      .catch(() => {
+        // Nothing to clear, or the bag was already gone.
+      })
+      .finally(() => setCleared(true));
   }
 
   return (

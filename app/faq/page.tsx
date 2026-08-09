@@ -5,7 +5,7 @@ export const metadata = { title: "FAQ — SLOGAN TEE" };
 const questions = [
   ["How does the fit run?", "Boxy and oversized. Choose your normal size for the intended fit, size down for a cleaner silhouette or size up for an exaggerated streetwear fit."],
   ["Where are the T-shirts made?", "The collection is developed and produced in Morocco, with every order quality-checked before dispatch."],
-  ["How do I place an order?", "Choose your product, colour and size, complete checkout, then send the prepared order through WhatsApp. We confirm stock and delivery before dispatch."],
+  ["How do I place an order?", "Choose your product, colour and size, then complete checkout. Your order reaches us straight away and you receive an order reference on screen. We call you to confirm stock and delivery before dispatch."],
   ["How do I pay?", "The first launch uses Cash on Delivery. Pay the confirmed total to the courier when the parcel arrives."],
   ["How much is delivery?", "Agadir delivery is free. Nationwide courier delivery is 35 MAD and becomes free when the order reaches 499 MAD."],
   ["Can I exchange my size?", "Yes. Contact us within 7 calendar days. The item must be unworn, unwashed and returned with its original tags and packaging."],
