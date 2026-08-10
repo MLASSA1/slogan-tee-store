@@ -14,8 +14,9 @@ export default function TermsPage() {
         <p>
           Product photography, colours and measurements are presented as
           accurately as possible. Minor colour variation and a ±2 cm garment
-          measurement tolerance can occur. An order is accepted only after we
-          confirm stock, price and delivery through WhatsApp.
+          measurement tolerance can occur. Completing checkout places your
+          order with us; it is accepted only once we have confirmed stock,
+          price and delivery with you directly.
         </p>
       </section>
       <section>

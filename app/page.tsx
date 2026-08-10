@@ -1,9 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { readCart, writeCart } from "./cart-storage";
+import { FormEvent, useEffect, useState } from "react";
+import { addToBag as addToServerBag, setBagQuantity, useCart } from "./cart-storage";
 import {
-  type CartItem,
   type Product,
   getProductImage,
   products,
@@ -11,31 +10,17 @@ import {
 } from "./store-data";
 
 export default function Home() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const cart = useCart();
   const [cartOpen, setCartOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [quickProduct, setQuickProduct] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState("M");
   const [selectedColour, setSelectedColour] = useState("Bone");
   const [joined, setJoined] = useState(false);
+  const [bagError, setBagError] = useState("");
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => setCart(readCart()), 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const cartCount = useMemo(
-    () => cart.reduce((total, item) => total + item.quantity, 0),
-    [cart],
-  );
-  const subtotal = useMemo(
-    () =>
-      cart.reduce(
-        (total, item) => total + item.product.price * item.quantity,
-        0,
-      ),
-    [cart],
-  );
+  const cartCount = cart.count;
+  const subtotal = cart.subtotal;
 
   useEffect(() => {
     const locked = cartOpen || menuOpen || Boolean(quickProduct);
@@ -61,32 +46,32 @@ export default function Home() {
   }
 
   function addToBag(product: Product, size: string, colour: string) {
-    const key = `${product.id}-${size}-${colour}`;
-    setCart((current) => {
-      const existing = current.find((item) => item.key === key);
-      const next = existing
-        ? current.map((item) =>
-          item.key === key ? { ...item, quantity: item.quantity + 1 } : item,
-        )
-        : [...current, { key, product, size, colour, quantity: 1 }];
-      writeCart(next);
-      return next;
-    });
+    setBagError("");
     setQuickProduct(null);
     setCartOpen(true);
+    addToServerBag({ productId: product.id, colour, size, quantity: 1 }).catch(
+      (error: unknown) => {
+        setBagError(
+          error instanceof Error ? error.message : "Could not add to bag.",
+        );
+      },
+    );
   }
 
-  function updateQuantity(key: string, change: number) {
-    setCart((current) => {
-      const next = current
-        .map((item) =>
-          item.key === key
-            ? { ...item, quantity: item.quantity + change }
-            : item,
-        )
-        .filter((item) => item.quantity > 0);
-      writeCart(next);
-      return next;
+  function updateQuantity(
+    item: { productId: string; colour: string; size: string; quantity: number },
+    change: number,
+  ) {
+    setBagError("");
+    setBagQuantity({
+      productId: item.productId,
+      colour: item.colour,
+      size: item.size,
+      quantity: item.quantity + change,
+    }).catch((error: unknown) => {
+      setBagError(
+        error instanceof Error ? error.message : "Could not update your bag.",
+      );
     });
   }
 
@@ -139,7 +124,7 @@ export default function Home() {
       <section className="hero" id="top" aria-labelledby="hero-title">
         <img
           className="hero-image"
-          src="/images/slogan-tee-hero.png"
+          src="/images/slogan-tee-hero.jpg"
           alt="Four young Moroccan models wearing Slogan Tee designs in a brutalist studio"
         />
         <div className="hero-shade" />
@@ -255,7 +240,7 @@ export default function Home() {
           <article className="review-card">
             <div className="review-proof">
               <img
-                src="/images/review-casa-anonymous.png"
+                src="/images/review-casa-anonymous.svg"
                 alt="Sample anonymized customer-content layout from Casablanca with a photo wearing the Just Kiss Me T-shirt"
               />
               <div className="review-proof-label" aria-hidden="true">
@@ -286,7 +271,7 @@ export default function Home() {
           <article className="review-card">
             <div className="review-proof">
               <img
-                src="/images/review-rabat-anonymous.png"
+                src="/images/review-rabat-anonymous.svg"
                 alt="Sample anonymized customer-content layout from Rabat showing the Just Kiss Me T-shirt and a comment about quality and fit"
               />
               <div className="review-proof-label" aria-hidden="true">
@@ -329,7 +314,7 @@ export default function Home() {
       <section className="story-section" id="story">
         <div className="story-image" aria-hidden="true">
           <img
-            src="/images/slogan-tee-hero.png"
+            src="/images/slogan-tee-hero.jpg"
             alt=""
             style={{ objectPosition: "65% center" }}
           />
@@ -621,27 +606,37 @@ export default function Home() {
             <h2 id="cart-title">Your bag [{cartCount}]</h2>
             <button type="button" onClick={() => setCartOpen(false)} aria-label="Close shopping bag">Close ×</button>
           </div>
-          {cart.length ? (
+          {bagError && (
+            <p className="checkout-error" role="alert">{bagError}</p>
+          )}
+          {!cart.ready ? (
+            <div className="empty-cart">
+              <p>LOADING YOUR BAG…</p>
+            </div>
+          ) : cart.items.length ? (
             <>
               <div className="cart-items">
-                {cart.map((item) => (
+                {cart.items.map((item) => (
                   <article className="cart-item" key={item.key}>
                     <div className="cart-thumb">
                       <img
-                        src={getProductImage(item.product, item.colour)}
-                        alt={`${item.product.name} in ${item.colour}`}
+                        src={item.image}
+                        alt={`${item.name} in ${item.colour}`}
                       />
                     </div>
                     <div>
-                      <h3>{item.product.name}</h3>
+                      <h3>{item.name}</h3>
                       <p>Size {item.size} · {item.colour}</p>
                       <div className="quantity">
-                        <button type="button" onClick={() => updateQuantity(item.key, -1)} aria-label={`Decrease ${item.product.name} quantity`}>−</button>
+                        <button type="button" onClick={() => updateQuantity(item, -1)} aria-label={`Decrease ${item.name} quantity`}>−</button>
                         <span>{item.quantity}</span>
-                        <button type="button" onClick={() => updateQuantity(item.key, 1)} aria-label={`Increase ${item.product.name} quantity`}>＋</button>
+                        <button type="button" disabled={item.quantity >= item.stock} onClick={() => updateQuantity(item, 1)} aria-label={`Increase ${item.name} quantity`}>＋</button>
                       </div>
+                      {!item.available && (
+                        <p className="stock-note">Only {item.stock} left — reduce the quantity.</p>
+                      )}
                     </div>
-                    <strong>{item.product.price * item.quantity} MAD</strong>
+                    <strong>{item.lineTotal} MAD</strong>
                   </article>
                 ))}
               </div>

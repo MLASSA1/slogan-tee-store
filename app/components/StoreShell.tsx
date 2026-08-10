@@ -1,28 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { readCart } from "../cart-storage";
+import { useCart } from "../cart-storage";
 
 export const whatsappUrl = "https://wa.me/212642880942";
 
 export function StoreShell({ children }: { children: React.ReactNode }) {
-  const [bagCount, setBagCount] = useState(0);
-
-  useEffect(() => {
-    const refresh = () =>
-      setBagCount(
-        readCart().reduce((total, item) => total + item.quantity, 0),
-      );
-    const timer = window.setTimeout(refresh, 0);
-    window.addEventListener("slogan-cart-updated", refresh);
-    window.addEventListener("storage", refresh);
-    return () => {
-      window.clearTimeout(timer);
-      window.removeEventListener("slogan-cart-updated", refresh);
-      window.removeEventListener("storage", refresh);
-    };
-  }, []);
+  const bagCount = useCart().count;
 
   return (
     <main className="subpage-shell">

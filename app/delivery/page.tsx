@@ -24,9 +24,10 @@ export default function DeliveryPage() {
       <section>
         <h2>How your order is confirmed</h2>
         <p>
-          Checkout prepares your order on WhatsApp. Our team confirms the
-          products, size, colour, address, delivery fee and expected delivery
-          time before dispatch.
+          Your order reaches us the moment you complete checkout. Our team then
+          calls you on the number you provided to confirm the products, size,
+          colour, address, delivery fee and expected delivery time before
+          dispatch.
         </p>
       </section>
       <section>
