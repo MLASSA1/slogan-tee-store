@@ -30,7 +30,13 @@ designs built around the idea **Private Thoughts, Worn Publicly**.
 
 - Node.js `>=22.13.0`
 - npm
-- Linux is recommended for the bounded install/build helper scripts
+
+`npm run dev`, `npm run build` and `npm test` work on macOS and Linux. The build
+is wrapped in a timeout on machines that have GNU `timeout` (or `gtimeout` via
+`brew install coreutils`) and runs unbounded otherwise.
+
+`npm run install:ci` is the locked, bounded installer and is Linux-only — it
+needs `flock` and `sha256sum`. Use plain `npm ci` elsewhere.
 
 ## Local development
 
